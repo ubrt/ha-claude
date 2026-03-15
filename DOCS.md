@@ -30,28 +30,3 @@ Beim ersten Start muss Claude Code einmalig authentifiziert werden:
 
 - **home-assistant-skills** — Best Practices für HA Automationen, Helfer, Scripts und Dashboards
 
-## Overlay (optional) — Browser Mod
-
-Für ein echtes Overlay auf jeder Dashboard-Seite:
-
-1. [Browser Mod](https://github.com/thomasloven/hass-browser_mod) via HACS installieren
-2. Folgenden Button zu deinem Dashboard hinzufügen:
-
-```yaml
-type: button
-name: Claude Code
-icon: mdi:robot
-tap_action:
-  action: fire-dom-event
-  browser_mod:
-    service: browser_mod.popup
-    data:
-      title: Claude Code
-      size: wide
-      content:
-        type: iframe
-        url: /api/hassio_ingress/claude_code/
-        aspect_ratio: "75%"
-```
-
-Damit öffnet sich Claude Code als Popup-Overlay auf der aktuellen Seite.

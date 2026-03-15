@@ -49,29 +49,6 @@ The addon writes a `.mcp.json` file to `/config` on every start, pointing Claude
 
 The recommended MCP server for Home Assistant is [ha-mcp](https://github.com/homeassistant-ai/ha-mcp), which exposes the Home Assistant API via the Model Context Protocol over HTTP. Follow its installation instructions to obtain the endpoint URL and any required authentication token to enter in the addon configuration.
 
-## Overlay (optional)
-
-For a floating terminal overlay on any dashboard page, install [Browser Mod](https://github.com/thomasloven/hass-browser_mod) via HACS and add the following button card to a dashboard:
-
-```yaml
-type: button
-name: Claude Code
-icon: mdi:robot
-tap_action:
-  action: fire-dom-event
-  browser_mod:
-    service: browser_mod.popup
-    data:
-      title: Claude Code
-      size: wide
-      content:
-        type: iframe
-        url: /api/hassio_ingress/local_claude_code/
-        aspect_ratio: "60%"
-```
-
-Note that the popup closes on page navigation. The underlying tmux session remains active and reattaches when the popup is reopened.
-
 ## Development
 
 The addon is built on the official Home Assistant Debian base image. Claude Code is installed via npm during the image build. The web terminal is provided by [ttyd](https://github.com/tsl0922/ttyd).
