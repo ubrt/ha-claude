@@ -1,0 +1,22 @@
+name: "Claude Code"
+description: "Claude Code KI-Assistent direkt in Home Assistant"
+version: "1.2.0"
+slug: "claude_code"
+init: false
+arch:
+  - aarch64
+  - amd64
+ingress: true
+ingress_port: 7681
+panel_icon: "mdi:robot"
+panel_title: "Claude Code"
+options:
+  mcp_url: "https://your-ha-instance/mcp_server/sse?token=YOUR_TOKEN"
+  model: "claude-opus-4-6"
+  auto_updates_channel: "latest"
+schema:
+  mcp_url: str
+  model: str
+  auto_updates_channel: str
+map:
+  - config:rw
