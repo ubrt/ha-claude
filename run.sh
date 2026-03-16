@@ -70,6 +70,57 @@ cat > /config/CLAUDE.md << EOF
 ${NOTES}
 EOF
 
+# Write custom HA commands
+# tmux config: enable mouse scrolling
+mkdir -p /data
+cat > /data/.tmux.conf << 'EOF'
+set -g mouse on
+set -g history-limit 10000
+EOF
+export TMUX_CONFIG=/data/.tmux.conf
+
+mkdir -p /data/.claude/commands
+
+cat > /data/.claude/commands/ha-backup.md << 'EOF'
+Check when the last Home Assistant backup was created using the MCP tools. Display the result clearly. If no backup exists from the last 24 hours, ask the user whether a new backup should be created and create it if confirmed.
+EOF
+
+cat > /data/.claude/commands/ha-check.md << 'EOF'
+Validate the current Home Assistant configuration using the MCP check_config tool. Display all errors and warnings clearly. If the configuration is valid, confirm this to the user.
+EOF
+
+cat > /data/.claude/commands/ha-restart.md << 'EOF'
+Ask the user to confirm before proceeding. If confirmed, restart Home Assistant using the MCP tools and inform the user that the restart has been initiated.
+EOF
+
+cat > /data/.claude/commands/ha-log.md << 'EOF'
+Fetch the most recent Home Assistant logbook entries using the MCP tools and display them in a clean, readable format. If $ARGUMENTS is provided, use it as a filter (e.g. entity name or keyword).
+EOF
+
+cat > /data/.claude/commands/ha-discover.md << 'EOF'
+Perform a full scan of the Home Assistant environment using MCP tools. Collect the following:
+- All areas and floors
+- All devices grouped by area
+- All entities grouped by domain and area
+- All automations (name, state, last triggered)
+- All scripts
+- All active helpers (input_boolean, input_number, input_select, etc.)
+- All installed dashboards
+
+Summarize the findings and save a structured overview to memory so future interactions can reference the environment without needing to re-scan. Inform the user when the discovery is complete and the memory has been saved.
+EOF
+
+cat > /data/.claude/commands/ha-optimize.md << 'EOF'
+Analyse the current Home Assistant setup for optimization opportunities. Work through the following systematically:
+
+1. Load all automations via MCP and review each one for: redundant triggers, missing conditions, wrong automation mode, use of device_id instead of entity_id, and template logic that could be replaced by native HA constructs.
+2. Load all scripts and check for duplication, unused scripts, and logic that could be simplified.
+3. Read all blueprint files from /config/blueprints/ and assess whether they follow best practices.
+4. Check all helpers (input_boolean, input_number, etc.) for any that appear unused across automations and scripts.
+
+For each finding, provide a concrete suggestion with a brief explanation of why it is an improvement. Group findings by category (automations, scripts, blueprints, helpers). Do not make any changes — present the findings first and let the user decide what to act on.
+EOF
+
 # Write MCP server config
 cat > /config/.mcp.json << EOF
 {
@@ -96,4 +147,4 @@ bashio::log.info "Starting Claude Code (model: ${MODEL})"
 exec ttyd \
   --port 7681 \
   --writable \
-  tmux new-session -A -s claude bash -c "cd /config && claude ${CLAUDE_FLAGS}; exec bash"
+  tmux -f /data/.tmux.conf new-session -A -s claude bash -c "cd /config && claude ${CLAUDE_FLAGS}; exec bash"
