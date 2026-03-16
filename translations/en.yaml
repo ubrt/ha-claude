@@ -1,0 +1,25 @@
+configuration:
+  mcp_url:
+    name: MCP Server URL
+    description: Full URL to the Home Assistant MCP server, including any authentication token. Example: https://your-ha/mcp_server/sse?token=YOUR_TOKEN
+  model:
+    name: Claude Model
+    description: "Claude model to use. Options: claude-opus-4-6 (most capable), claude-sonnet-4-6 (fast & smart), claude-haiku-4-5-20251001 (fastest)"
+  auto_updates_channel:
+    name: Auto Updates Channel
+    description: "Update channel for Claude Code: latest (stable) or beta"
+  notes:
+    name: Session Notes
+    description: Additional context included at the start of every session — describe your setup, rooms, devices, or preferences so Claude can assist without re-explaining each time
+  loop_enabled:
+    name: Enable Periodic Loop
+    description: When enabled, Claude automatically starts a recurring task loop when the session opens
+  loop_interval:
+    name: Loop Interval (minutes)
+    description: How often the loop runs, in minutes
+  loop_start_delay:
+    name: Loop Start Delay (seconds)
+    description: How many seconds to wait after the session opens before the loop activates — give Claude time to finish loading
+  loop_task:
+    name: Loop Task
+    description: What Claude should do on each loop iteration — describe the task in plain text, e.g. "Check if any lights were left on and send a push notification"

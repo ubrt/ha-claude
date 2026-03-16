@@ -1,6 +1,6 @@
 name: "Claude Home"
-description: "Claude KI-Assistent direkt in Home Assistant"
-version: "1.6.0"
+description: "Claude AI assistant with full Home Assistant integration — MCP server, HA skills, and direct config access"
+version: "1.11.0"
 slug: "claude_code"
 init: false
 arch:
@@ -11,14 +11,36 @@ ingress_port: 7681
 panel_icon: "mdi:robot"
 panel_title: "Claude Home"
 options:
+  # --- Connection ---
   mcp_url: "https://your-ha-instance/mcp_server/sse?token=YOUR_TOKEN"
+
+  # --- Claude model ---
+  # Available: claude-opus-4-6, claude-sonnet-4-6, claude-haiku-4-5-20251001
   model: "claude-opus-4-6"
   auto_updates_channel: "latest"
+
+  # --- Context ---
+  # Additional notes about your setup included in every session (entities, rooms, preferences, etc.)
   notes: ""
+
+  # --- Periodic loop ---
+  # When enabled, Claude automatically starts a self-renewing loop on session start
+  loop_enabled: false
+  # How often the loop runs (minutes)
+  loop_interval: 30
+  # How many seconds to wait after session start before activating the loop
+  loop_start_delay: 30
+  # What Claude should do on each loop iteration (free text)
+  loop_task: ""
+
 schema:
   mcp_url: str
   model: str
   auto_updates_channel: str
   notes: str
+  loop_enabled: bool
+  loop_interval: int
+  loop_start_delay: int
+  loop_task: str
 map:
   - config:rw

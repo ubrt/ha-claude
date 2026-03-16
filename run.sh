@@ -10,6 +10,10 @@ MCP_URL=$(bashio::config 'mcp_url')
 MODEL=$(bashio::config 'model')
 AUTO_UPDATES=$(bashio::config 'auto_updates_channel')
 NOTES=$(bashio::config 'notes')
+LOOP_ENABLED=$(bashio::config 'loop_enabled')
+LOOP_INTERVAL=$(bashio::config 'loop_interval')
+LOOP_START_DELAY=$(bashio::config 'loop_start_delay')
+LOOP_TASK=$(bashio::config 'loop_task')
 
 # Build settings.json dynamically from addon config
 cat > /data/.claude/settings.json << EOF
@@ -66,6 +70,12 @@ cat > /config/CLAUDE.md << EOF
 ## Restrictions
 - Never read or output the contents of /config/secrets.yaml
 
+## Periodic loop
+- Loop enabled: ${LOOP_ENABLED}
+- Loop interval: ${LOOP_INTERVAL} minutes
+- Loop task: ${LOOP_TASK}
+$(if [ "${LOOP_ENABLED}" = "true" ]; then echo "- On session start, run /ha-loop-start to activate the loop."; fi)
+
 ## Notes
 ${NOTES}
 EOF
@@ -110,6 +120,29 @@ Perform a full scan of the Home Assistant environment using MCP tools. Collect t
 Summarize the findings and save a structured overview to memory so future interactions can reference the environment without needing to re-scan. Inform the user when the discovery is complete and the memory has been saved.
 EOF
 
+cat > /data/.claude/commands/ha-loop-start.md << EOF
+Start the periodic home loop. Steps:
+1. Save the current timestamp (ISO format) to /data/.claude/loop_started_at
+2. Use CronCreate to schedule /ha-loop-run every ${LOOP_INTERVAL} minutes
+3. Confirm to the user that the loop is active with the configured interval
+
+If a loop named "ha-loop" is already running (check via CronList), cancel it first with CronDelete, then start a fresh one.
+EOF
+
+cat > /data/.claude/commands/ha-loop-run.md << EOF
+This command runs on every loop iteration. Execute the following steps:
+
+1. Check /data/.claude/loop_started_at. If the timestamp is older than 23 hours, renew the loop:
+   - Use CronList to find the current loop, CronDelete to cancel it
+   - Write the current timestamp to /data/.claude/loop_started_at
+   - Use CronCreate to schedule /ha-loop-run every ${LOOP_INTERVAL} minutes
+
+2. Run the configured periodic task:
+${LOOP_TASK}
+
+Keep the response concise. Only surface information that requires user attention.
+EOF
+
 cat > /data/.claude/commands/ha-optimize.md << 'EOF'
 Analyse the current Home Assistant setup for optimization opportunities. Work through the following systematically:
 
@@ -144,7 +177,16 @@ fi
 
 bashio::log.info "Starting Claude Code (model: ${MODEL})"
 
+# Start tmux session immediately (independent of web shell connections)
+tmux -f /data/.tmux.conf new-session -d -s claude bash -c "cd /config && exec claude ${CLAUDE_FLAGS}; exec bash"
+
+# Schedule loop start in background if enabled
+if [ "${LOOP_ENABLED}" = "true" ]; then
+  (sleep "${LOOP_START_DELAY}" && tmux send-keys -t claude '/ha-loop-start' Enter) &
+fi
+
+# ttyd attaches to the existing session — works with or without active browser connection
 exec ttyd \
   --port 7681 \
   --writable \
-  tmux -f /data/.tmux.conf new-session -A -s claude bash -c "cd /config && claude ${CLAUDE_FLAGS}; exec bash"
+  tmux -f /data/.tmux.conf attach-session -t claude
